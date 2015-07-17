@@ -129,7 +129,6 @@ char * readLocation(){
     char gpsdata_copy[80];
     fona.getGPS(0, gpsdata, 80);
     strcpy(gpsdata_copy, gpsdata);
-    Serial.println(gpsdata_copy);
     return gpsdata_copy;
 }
 char * readGSMLocation(){ //Requires gprs to work
@@ -182,20 +181,23 @@ void flushSerial() {
     Serial.read();
 }
 
-void httprequest(char *httpurl){
+void httprequest(char *json){
   uint16_t statuscode;
   int16_t length;
-  char url[80];
-  strcpy(url,"<Enter URL here>");
+  char * urlhost="http://data-capture.linfiniti.com/123456789012345/";
+  //strcpy(url,"/123456789012345/");
   char data[80];
-  //Serial.println(url);
-  //Serial.println(data);
-  strcpy(data,httpurl);
-       if (!fona.HTTP_POST_start(url, F("text/plain"), (uint8_t *) data, strlen(data), &statuscode, (uint16_t *)&length)) {
+  strcpy(data,json);
+  Serial.println("begin");
+  Serial.println(urlhost);
+  Serial.println("middle");
+  Serial.println(data);
+       if (!fona.HTTP_POST_start(urlhost, F("text/plain"), (uint8_t *) data, strlen(data), &statuscode, (uint16_t *)&length)) {
          Serial.println("Failed!");
        }
        Serial.println(length);
        fona.HTTP_POST_end();
+       Serial.println("End");
 }
 
 char * parseJson(){
@@ -229,7 +231,7 @@ char * parseJson(){
     root["numofsatellites"]=numofsatellites;
     root["speed"]=speeding;
     root["course"]=course;
-    root.printTo(Serial);
+    //root.printTo(Serial);
     char buffer [256];
     root.printTo(buffer,sizeof(buffer));
     char * json =buffer;
@@ -240,7 +242,7 @@ void loop() {
     strcpy(olddata,temp);
     strcpy(newdata,readLocation());
     strcpy (temp,newdata);
-      if(!sameLocation(newdata, olddata)){
+    if(sameLocation(newdata, olddata)){
         counter++;
         Serial.println(counter);
         if(counter >= 60){
